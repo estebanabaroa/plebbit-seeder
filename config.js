@@ -6,8 +6,8 @@ export default {
       './temporary-default-subplebbits-multisub.json'
     ],
   },
-  kuboRpcUrl: 'http://193.242.184.216:11111/api/v0',
-  pubsubKuboRpcUrl: 'http://89.36.231.252:11111/api/v0',
+  kuboRpcUrl: 'http://127.0.0.1:5001/api/v0',
+  pubsubKuboRpcUrl: 'http://127.0.0.1:5001/api/v0',
   plebbitOptions: {
     ipfsGatewayUrls: [
       'https://ipfsgateway.xyz',
