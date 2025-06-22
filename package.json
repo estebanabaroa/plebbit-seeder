@@ -1,0 +1,27 @@
+{
+  "name": "plebbit-seeder",
+  "type": "module",
+  "version": "1.0.0",
+  "main": "start.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@plebbit/plebbit-js": "https://github.com/plebbit/plebbit-js.git#692ec349f01aa6d8e939ff1d6d07315ab92e4099",
+    "debug": "4.3.7",
+    "decompress": "4.2.1",
+    "dotenv": "16.0.3",
+    "express": "4.19.2",
+    "fs-extra": "11.1.0",
+    "javascript-time-ago": "2.5.10",
+    "kubo-rpc-client": "5.0.2",
+    "p-queue": "8.0.1",
+    "p-timeout": "6.1.3",
+    "progress": "2.0.3",
+    "string-strip-html": "13.4.8",
+    "yargs": "17.7.1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
