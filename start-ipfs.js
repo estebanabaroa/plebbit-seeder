@@ -29,23 +29,26 @@ const httpRouterUrls = [
 ]
 
 // http routers proxies to rewrite wrong kubo addresses
-const httpRouterProxyUrls = []
-let addressesRewriterStartPort = 19575 // use port 19575 as first port, looks like IPRTR (IPFS ROUTER)
-for (const httpRouterUrl of httpRouterUrls) {
-  // launch the proxy server
-  const port = addressesRewriterStartPort++
-  const hostname = '127.0.0.1'
-  const addressesRewriterProxyServer = new AddressesRewriterProxyServer({
-    plebbitOptions: {kuboRpcClientsOptions: [`http://127.0.0.1:${ipfsApiPort}/api/v0`]},
-    port, 
-    hostname,
-    proxyTargetUrl: httpRouterUrl,
-  })
-  addressesRewriterProxyServer.listen(() => {
-    console.log(`addresses rewriter proxy listening on http://${addressesRewriterProxyServer.hostname}:${addressesRewriterProxyServer.port} proxy target ${httpRouterUrl}`)
-  })
-  // save the proxy urls to use them later
-  httpRouterProxyUrls.push(`http://${hostname}:${port}`)
+let httpRouterProxyUrls = []
+const startAddressesRewriters = () => {
+  httpRouterProxyUrls = []
+  let addressesRewriterStartPort = 19575 // use port 19575 as first port, looks like IPRTR (IPFS ROUTER)
+  for (const httpRouterUrl of httpRouterUrls) {
+    // launch the proxy server
+    const port = addressesRewriterStartPort++
+    const hostname = '127.0.0.1'
+    const addressesRewriterProxyServer = new AddressesRewriterProxyServer({
+      plebbitOptions: {kuboRpcClientsOptions: [`http://127.0.0.1:${ipfsApiPort}/api/v0`]},
+      port, 
+      hostname,
+      proxyTargetUrl: httpRouterUrl,
+    })
+    addressesRewriterProxyServer.listen(() => {
+      console.log(`addresses rewriter proxy listening on http://${addressesRewriterProxyServer.hostname}:${addressesRewriterProxyServer.port} proxy target ${httpRouterUrl}`)
+    })
+    // save the proxy urls to use them later
+    httpRouterProxyUrls.push(`http://${hostname}:${port}`)
+  }
 }
 
 const architecture = arch()
@@ -287,12 +290,11 @@ const startIpfsAutoRestart = async () => {
 
   // retry starting ipfs every 1 second,
   // in case it was started by another client that shut down and shut down ipfs with it
-  start()
   setInterval(() => {
     start()
   }, 1000)
+  await start()
 }
-startIpfsAutoRestart()
 
 const proxyTarget = new URL(`http://127.0.0.1:${ipfsApiPort}`)
 const proxy = (req, res) => {
@@ -348,8 +350,8 @@ const proxy = (req, res) => {
   req.pipe(proxyReq)
 }
 
-// start server
-const startServer = (port) => {
+// start proxy server
+const startProxyServer = (port) => {
   const server = http.createServer()
 
   // never timeout the keep alive connection
@@ -393,4 +395,9 @@ const startServer = (port) => {
   server.listen(port)
   console.log(`proxy server listening on port ${port}`)
 }
-startServer(proxyIpfsApiPort)
+
+export default async () => {
+  startAddressesRewriters()
+  // startProxyServer(proxyIpfsApiPort)
+  await startIpfsAutoRestart()
+}

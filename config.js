@@ -2,7 +2,7 @@ export default {
   seeding: {
     // multisub urls or file paths to monitor (will support ipns names in the future)
     multisubs: [
-      // 'https://raw.githubusercontent.com/plebbit/temporary-default-subplebbits/master/multisub.json',
+      'https://raw.githubusercontent.com/plebbit/temporary-default-subplebbits/master/multisub.json',
       './temporary-default-subplebbits-multisub.json'
     ],
   },

@@ -17,8 +17,8 @@ if [ -z "${DEPLOY_USER+xxx}" ]; then echo "DEPLOY_USER not set" && exit; fi
 if [ -z "${DEPLOY_PASSWORD+xxx}" ]; then echo "DEPLOY_PASSWORD not set" && exit; fi
 
 SCRIPT="
-docker exec ipfs sh -c 'IPFS_PATH=.ipfs ./ipfs id'
-docker logs -n 100 ipfs
+docker ps
+docker logs -n 100 plebbit-seeder
 "
 
 # execute script over ssh

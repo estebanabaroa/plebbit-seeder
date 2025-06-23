@@ -34,7 +34,7 @@ FILE_NAMES=(
 
 # copy files
 for FILE_NAME in ${FILE_NAMES[@]}; do
-  sshpass -p "$DEPLOY_PASSWORD" scp $FILE_NAME "$DEPLOY_USER"@"$DEPLOY_HOST":/home/start-kubo-relay
+  sshpass -p "$DEPLOY_PASSWORD" scp $FILE_NAME "$DEPLOY_USER"@"$DEPLOY_HOST":/home/plebbit-seeder
 done
 
 SCRIPT="
