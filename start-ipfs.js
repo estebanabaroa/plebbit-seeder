@@ -10,6 +10,8 @@ import http from 'http'
 import tcpPortUsed from 'tcp-port-used'
 import {arch} from 'os'
 import {URL} from 'url'
+import AddressesRewriterProxyServer from './lib/addresses-rewriter-proxy-server.js'
+import config from './config.js'
 
 const basicAuthUsername = process.env.IPFS_BASIC_AUTH_USERNAME
 const basicAuthPassword = process.env.IPFS_BASIC_AUTH_PASSWORD
@@ -22,12 +24,29 @@ const ipfsClientVersion = '0.35.0'
 // list of http routers to use
 const envHttpRouterUrls = process.env.HTTP_ROUTER_URLS ? process.env.HTTP_ROUTER_URLS.split(',').map(url => url.trim()) : []
 const httpRouterUrls = [
-  'https://routing.lol',
-  'https://peers.pleb.bot',
-  'https://peers.plebpubsub.xyz',
-  'https://peers.forumindex.com',
+  ...config.plebbitOptions.httpRoutersOptions,
   ...envHttpRouterUrls,
 ]
+
+// http routers proxies to rewrite wrong kubo addresses
+const httpRouterProxyUrls = []
+let addressesRewriterStartPort = 19575 // use port 19575 as first port, looks like IPRTR (IPFS ROUTER)
+for (const httpRouterUrl of httpRouterUrls) {
+  // launch the proxy server
+  const port = addressesRewriterStartPort++
+  const hostname = '127.0.0.1'
+  const addressesRewriterProxyServer = new AddressesRewriterProxyServer({
+    plebbitOptions: {kuboRpcClientsOptions: [`http://127.0.0.1:${ipfsApiPort}/api/v0`]},
+    port, 
+    hostname,
+    proxyTargetUrl: httpRouterUrl,
+  })
+  addressesRewriterProxyServer.listen(() => {
+    console.log(`addresses rewriter proxy listening on http://${addressesRewriterProxyServer.hostname}:${addressesRewriterProxyServer.port} proxy target ${httpRouterUrl}`)
+  })
+  // save the proxy urls to use them later
+  httpRouterProxyUrls.push(`http://${hostname}:${port}`)
+}
 
 const architecture = arch()
 let ipfsClientArchitecture
@@ -161,7 +180,7 @@ const startIpfs = async () => {
     HttpRoutersParallel: {Type: 'parallel', Parameters: {Routers: []}},
     HttpRouterNotSupported: {Type: 'http', Parameters: {Endpoint: 'http://kubonotsupported'}}
   }
-  for (const [i, httpRouterUrl] of httpRouterUrls.entries()) {
+  for (const [i, httpRouterUrl] of httpRouterProxyUrls.entries()) {
     const RouterName = `HttpRouter${i+1}`
     httpRoutersConfig[RouterName] = {Type: 'http', Parameters: {
       Endpoint: httpRouterUrl,
@@ -186,6 +205,9 @@ const startIpfs = async () => {
   await spawnAsync(ipfsPath, ['config', 'Routing.Type', 'custom'], {env, hideWindows: true})
   await spawnAsync(ipfsPath, ['config', '--json', 'Routing.Routers', JSON.stringify(httpRoutersConfig)], {env, hideWindows: true})
   await spawnAsync(ipfsPath, ['config', '--json', 'Routing.Methods', JSON.stringify(httpRoutersMethodsConfig)], {env, hideWindows: true})
+
+  // make sure relay is enabled and bump max reservations
+  await spawnAsync(ipfsPath, ['config', '--json', 'Swarm.RelayService', '{"Enabled": true, "MaxReservations": 512}'], {env, hideWindows: true})
 
   // debug
   await spawnAsync(ipfsPath, ['config', 'show'], {env, hideWindows: true})
