@@ -12,6 +12,6 @@ docker run \
   --restart always \
   --log-opt max-size=10m \
   --log-opt max-file=5 \
-  node:18 sh -c "node start"
+  node:18 sh -c "npm install; node start"
 
 docker logs --follow plebbit-seeder
