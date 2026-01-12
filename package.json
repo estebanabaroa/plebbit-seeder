@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@plebbit/plebbit-js": "https://github.com/plebbit/plebbit-js.git#692ec349f01aa6d8e939ff1d6d07315ab92e4099",
+    "check-disk-space": "3.4.0",
     "debug": "4.3.7",
     "decompress": "4.2.1",
     "dotenv": "16.0.3",

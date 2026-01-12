@@ -396,6 +396,32 @@ const startProxyServer = (port) => {
   console.log(`proxy server listening on port ${port}`)
 }
 
+// garbage collect ipfs if disk space is low every 1h
+import checkDiskSpace from 'check-disk-space'
+const ipfsGarbageCollect = async () => {
+  const root = process.platform === 'win32' ? path.parse(process.cwd()).root : '/'
+  const thresholdPercent = 20
+  try {
+    const {free, size} = await checkDiskSpace(root)
+    const percentFree = (free / size) * 100
+    if (percentFree < thresholdPercent) {
+      const rootPath = path.dirname(fileURLToPath(import.meta.url))
+      const ipfsFileName = process.platform === 'win32' ? 'ipfs.exe' : 'ipfs'
+      const ipfsPath = path.resolve(rootPath, 'bin', ipfsFileName)
+      const ipfsDataPath = path.resolve(rootPath, '.ipfs')
+      const env = {IPFS_PATH: ipfsDataPath}
+      console.log('ipfs start garbage collect', {free, size, percentFree})
+      spawnSync(ipfsPath, ['repo', 'gc'], {
+        env,
+        stdio: 'inherit',
+      })
+      console.log('ipfs finished garbage collect')
+    }
+  } catch (e) {
+    console.error('failed ipfs garbage collect', e)
+  }
+}
+
 export default async () => {
   startAddressesRewriters()
   // startProxyServer(proxyIpfsApiPort)

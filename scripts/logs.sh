@@ -20,6 +20,7 @@ SCRIPT="
 docker ps
 docker logs -n 100 -f plebbit-seeder
 # docker exec plebbit-seeder sh -c 'IPFS_PATH=.ipfs bin/ipfs id'
+# docker exec plebbit-seeder sh -c 'IPFS_PATH=.ipfs bin/ipfs repo gc'
 "
 
 # execute script over ssh
